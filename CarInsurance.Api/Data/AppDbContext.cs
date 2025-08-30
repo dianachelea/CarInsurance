@@ -9,11 +9,13 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Car> Cars => Set<Car>();
     public DbSet<InsurancePolicy> Policies => Set<InsurancePolicy>();
 
+    public DbSet<InsuranceClaim> Claims => Set<InsuranceClaim>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Car>()
             .HasIndex(c => c.Vin)
-            .IsUnique(false); // TODO: set true and handle conflicts
+            .IsUnique(true); // TODO: set true and handle conflicts
 
         modelBuilder.Entity<InsurancePolicy>()
             .Property(p => p.StartDate)
@@ -21,6 +23,23 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
         modelBuilder.Entity<InsurancePolicy>()
             .Property(p => p.EndDate)
             .IsRequired();
+
+        modelBuilder.Entity<InsuranceClaim>()
+            .Property(c=> c.ClaimDate)
+            .IsRequired();  
+        modelBuilder.Entity<InsuranceClaim>()
+            .Property(c => c.Description)
+            .IsRequired();
+        modelBuilder.Entity<InsuranceClaim>()
+            .Property (c => c.Amount)
+            .IsRequired();
+        modelBuilder.Entity<InsuranceClaim>()
+            .HasCheckConstraint("CK_Amount_Positive", "Amount > 0");
+        modelBuilder.Entity<InsuranceClaim>()
+            .HasOne(c => c.Car)
+            .WithMany(c => c.Claims)
+            .HasForeignKey(c => c.CarId)
+            .OnDelete(DeleteBehavior.Cascade);
         // EndDate intentionally left nullable for a later task
     }
 }
