@@ -8,7 +8,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Owner> Owners => Set<Owner>();
     public DbSet<Car> Cars => Set<Car>();
     public DbSet<InsurancePolicy> Policies => Set<InsurancePolicy>();
-
+    public DbSet<PolicyExpiration> PolicyExpiration => Set<PolicyExpiration>();
     public DbSet<InsuranceClaim> Claims => Set<InsuranceClaim>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -40,6 +40,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
             .WithMany(c => c.Claims)
             .HasForeignKey(c => c.CarId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PolicyExpiration>()
+            .HasIndex(pe => pe.PolicyId)
+            .IsUnique(true);
         // EndDate intentionally left nullable for a later task
     }
 }
