@@ -67,4 +67,61 @@ public class CarsController(CarService service) : ControllerBase
             return NotFound();
         }
     }
+    [HttpPost("cars/{carId:long}/policies")]
+    public async Task<IActionResult> CreatePolicy(long carId, CreatePolicyRequest request)
+    {
+        if (request is null)
+            return BadRequest("Body is required.");
+
+        if (!DateOnly.TryParseExact(request.StartDate, "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var start))
+            return BadRequest("Invalid StartDate. Format YYYY-MM-DD.");
+
+        if (!DateOnly.TryParseExact(request.EndDate, "yyyy-MM-dd", CultureInfo.InvariantCulture,
+                DateTimeStyles.None, out var end))
+            return BadRequest("Invalid EndDate. Format YYYY-MM-DD.");
+
+        try
+        {
+            var id = await _service.CreatePolicyAsync(carId, start, end, request.Provider);
+            if (id is null)
+                return BadRequest("Could not create policy.");
+            var location = $"/api/cars/{carId}/policies/{id}";
+            return Created(location, new { id });
+        }
+        catch (ArgumentException ex)             
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)        
+        {
+            return Conflict(ex.Message);            
+        }
+    }
+
+    [HttpPost("cars")]
+    public async Task<IActionResult> CreateCar([FromBody] CreateCarRequest body)
+    {
+        if (body is null)
+            return BadRequest("Body is required.");
+
+        try
+        {
+            var id = await _service.CreateCar(body);
+            var location = $"/api/cars/{id}";
+            return Created(location, new { id });
+        }
+        catch (ArgumentException ex)          
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (InvalidOperationException ex)   
+        {
+            return Conflict(ex.Message);      
+        }
+        catch (KeyNotFoundException)           
+        {
+            return NotFound();
+        }
+    }
 }

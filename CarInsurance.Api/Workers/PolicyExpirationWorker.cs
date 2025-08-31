@@ -7,7 +7,7 @@ namespace CarInsurance.Api.Workers
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly ILogger<PolicyExpirationWorker> _log;
-        private readonly TimeSpan _interval = TimeSpan.FromSeconds(10);
+        private readonly TimeSpan _interval = TimeSpan.FromHours(1);
         private readonly TimeZoneInfo _businessTz = TimeZoneInfo.Local; 
 
         public PolicyExpirationWorker(IServiceScopeFactory scopeFactory, ILogger<PolicyExpirationWorker> log)
